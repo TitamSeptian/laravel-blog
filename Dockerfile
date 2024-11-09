@@ -26,6 +26,8 @@ ENV HEALTHCHECK_PATH="/up"
 
 # Copy the app files...
 COPY --chown=www-data:www-data . /var/www/html
+RUN mkdir -p /var/www/html/database && touch /var/www/html/database/database.sqlite
+
 
 # Re-run install, but now with scripts and optimizing the autoloader (should be faster)...
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -34,3 +36,9 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 RUN yarn install --immutable && \
     yarn build && \
     rm -rf node_modules
+
+# Generate application key
+RUN php artisan key:generate
+RUN php artisan storage:link
+# Expose the port nginx is reachable on
+EXPOSE 8080
